@@ -110,6 +110,49 @@
   .rodape{text-align:center;color:var(--apagado);font-size:14px;padding:0 20px 30px;}
   .carregando{padding:60px 20px;text-align:center;color:var(--apagado);}
   @media (prefers-reduced-motion: reduce){ .barra i{transition:none;} }
+
+  /* ---------- Player do treinamento (etapas + vídeo) ---------- */
+  .aula{position:fixed;inset:0;z-index:40;background:var(--papel);display:flex;flex-direction:column;}
+  .aula-topo{background:var(--folha);border-bottom:1px solid #E3E8E3;padding:calc(12px + env(safe-area-inset-top, 0px)) 16px 12px;}
+  .aula-topo-in{max-width:760px;margin:0 auto;}
+  .aula-linha{display:flex;align-items:center;gap:12px;}
+  .aula-fechar{background:transparent;border:1.5px solid var(--linha);border-radius:8px;width:38px;height:38px;cursor:pointer;font-size:18px;color:var(--tinta);flex-shrink:0;}
+  .aula-nome{font-family:var(--titulo);font-weight:600;font-size:17px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .aula-conta{font-size:14px;color:var(--apagado);white-space:nowrap;}
+  .aula-passos{display:flex;gap:3px;margin-top:10px;}
+  .aula-passos i{flex:1;height:5px;border-radius:3px;background:#E3E8E3;transition:background .3s;}
+  .aula-passos i.feito{background:var(--marca-verde);}
+  .aula-passos i.atual{background:var(--marco);}
+  .aula-palco{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+  .aula-conteudo{max-width:680px;margin:0 auto;padding:34px 22px 40px;}
+  .aula-rotulo{font-size:14px;color:var(--apagado);margin:0 0 8px;opacity:0;animation:revelar .5s ease forwards;}
+  .aula-titulo{font-family:var(--titulo);font-weight:800;font-size:clamp(28px, 7vw, 44px);line-height:1.08;letter-spacing:-.01em;color:var(--mata);margin:0 0 22px;}
+  .aula-titulo .pl{display:inline-block;opacity:0;transform:translateY(.4em);animation:palavra .55s cubic-bezier(.2,.8,.3,1) forwards;}
+  .aula-conteudo .rev{opacity:0;transform:translateY(12px);animation:revelar .6s ease forwards;}
+  .aula-conteudo p{margin:0 0 14px;max-width:62ch;}
+  .aula-conteudo h3{font-family:var(--titulo);font-weight:600;font-size:19px;margin:22px 0 8px;color:var(--mata-2);}
+  .aula-conteudo ul{list-style:none;margin:0 0 14px;padding:0;}
+  .aula-conteudo li{position:relative;padding:10px 12px 10px 34px;margin-bottom:8px;background:var(--folha);border-radius:10px;border:1px solid #E6EBE6;}
+  .aula-conteudo li::before{content:"";position:absolute;left:14px;top:19px;width:8px;height:8px;border-radius:50%;background:var(--marco);}
+  .aula-conteudo strong{color:var(--mata);}
+  .aula-video{position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#0d1a14;margin-top:6px;}
+  .aula-video iframe{position:absolute;inset:0;width:100%;height:100%;border:0;}
+  .aula-rodape{background:var(--folha);border-top:1px solid #E3E8E3;padding:12px 16px calc(12px + env(safe-area-inset-bottom, 0px));}
+  .aula-rodape-in{max-width:760px;margin:0 auto;display:flex;justify-content:space-between;gap:10px;}
+  .btn-voltar{background:transparent;color:var(--tinta);border:1.5px solid var(--linha);}
+  .btn-voltar:disabled{visibility:hidden;}
+  .btn-avancar{background:var(--mata);color:#fff;min-width:150px;}
+  .btn-avancar.fim{background:var(--feito);}
+  .aula-fim{text-align:center;padding-top:40px;}
+  .aula-fim .selo{width:92px;height:92px;border-radius:50%;background:var(--feito);color:#fff;font-size:46px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;animation:selo .7s cubic-bezier(.2,.9,.3,1.3) forwards;transform:scale(0);}
+  @keyframes palavra{to{opacity:1;transform:none;}}
+  @keyframes revelar{to{opacity:1;transform:none;}}
+  @keyframes selo{to{transform:scale(1);}}
+  @media (prefers-reduced-motion: reduce){
+    .aula *{animation-delay:0s !important;animation-duration:.01s !important;}
+  }
+  .btn-comecar{background:var(--mata);color:#fff;}
+
   /* ---------- Abertura animada ---------- */
   .intro{position:fixed;inset:0;z-index:50;background:var(--folha);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;overflow:hidden;}
   .intro-pular{position:absolute;top:calc(14px + env(safe-area-inset-top, 0px));right:16px;background:transparent;border:0;color:var(--apagado);font-size:15px;cursor:pointer;padding:8px 10px;}
@@ -195,6 +238,23 @@
   <main class="trilha" id="t-lista"><div class="carregando">Carregando seus treinamentos…</div></main>
   <p class="rodape">Dúvidas sobre um treinamento? Procure o RH.</p>
 </div>
+
+<!-- ===== Player do treinamento ===== -->
+<section id="tela-aula" class="aula oculto" aria-label="Treinamento">
+  <header class="aula-topo"><div class="aula-topo-in">
+    <div class="aula-linha">
+      <button class="aula-fechar" type="button" onclick="fecharAula()" aria-label="Fechar treinamento">&#10005;</button>
+      <div class="aula-nome" id="aula-nome"></div>
+      <span class="aula-conta" id="aula-conta"></span>
+    </div>
+    <div class="aula-passos" id="aula-passos" aria-hidden="true"></div>
+  </div></header>
+  <main class="aula-palco" id="aula-palco"></main>
+  <footer class="aula-rodape"><div class="aula-rodape-in">
+    <button class="btn btn-voltar" id="aula-voltar" type="button" onclick="passoAula(-1)">Anterior</button>
+    <button class="btn btn-avancar" id="aula-avancar" type="button" onclick="passoAula(1)">Próximo</button>
+  </div></footer>
+</section>
 
 <!-- ===== Abertura animada (aparece ao abrir o link) ===== -->
 <section id="tela-intro" class="intro oculto" aria-label="Boas-vindas">
@@ -363,6 +423,17 @@ function detalhe(t){
     h += '<div class="aviso" style="background:#FBEAE8;color:var(--alerta);">A validade venceu em ' + fmtData(t.vence_em) + '. É preciso fazer de novo.</div>';
   }
 
+  if(temAula(t)){
+    var pr = lerProgresso(t.id);
+    var rotulo = t.situacao === 'concluido' ? 'Rever treinamento'
+      : (pr.atual > 0 ? 'Continuar de onde parei' : 'Começar treinamento');
+    h += '<div class="acoes"><button class="btn btn-comecar" type="button" onclick="abrirAula(' + t.id + ')">' + rotulo + '</button>'
+      + (t.link_conteudo && t.link_conteudo !== t.video_youtube ? '<a class="btn btn-voltar" href="' + esc(t.link_conteudo) + '" target="_blank" rel="noopener">Material de apoio</a>' : '')
+      + '</div>';
+    if(t.situacao !== 'concluido' && !t.conclusao_online) h += avisoPresencial(t);
+    return h + '</div>';
+  }
+
   if(t.situacao !== 'concluido'){
     if(t.conclusao_online){
       h += '<div class="acoes">';
@@ -372,15 +443,19 @@ function detalhe(t){
       h += '</div>';
       if(!liberado) h += '<p class="dica" style="margin:10px 0 0;">Abra o conteúdo para liberar a conclusão.</p>';
     } else {
-      h += '<div class="aviso">' + (t.turma_data
-        ? 'Treinamento presencial. Próxima turma: <b>' + fmtData(t.turma_data) + '</b>'
-            + (t.turma_inicio ? ' às ' + esc(t.turma_inicio) + (t.turma_fim ? ' até ' + esc(t.turma_fim) : '') : '')
-            + (t.turma_sala ? ', ' + esc(t.turma_sala) : '') + '. O RH registra a sua presença.'
-        : 'Treinamento presencial. O RH vai avisar a data da turma e registrar a sua presença.') + '</div>';
+      h += avisoPresencial(t);
       if(t.link_conteudo) h += '<div class="acoes"><a class="btn btn-conteudo" href="' + esc(t.link_conteudo) + '" target="_blank" rel="noopener">Ver material de apoio</a></div>';
     }
   }
   return h + '</div>';
+}
+
+function avisoPresencial(t){
+  return '<div class="aviso">' + (t.turma_data
+    ? 'Treinamento presencial. Próxima turma: <b>' + fmtData(t.turma_data) + '</b>'
+        + (t.turma_inicio ? ' às ' + esc(t.turma_inicio) + (t.turma_fim ? ' até ' + esc(t.turma_fim) : '') : '')
+        + (t.turma_sala ? ', ' + esc(t.turma_sala) : '') + '. O RH registra a sua presença.'
+    : 'Treinamento presencial. O RH vai avisar a data da turma e registrar a sua presença.') + '</div>';
 }
 
 function alternar(id){ expandido = (expandido === id) ? -1 : id; renderTrilha(); }
@@ -404,6 +479,179 @@ async function concluir(id){
     if(b){ b.disabled = false; b.textContent = 'Marcar como concluído'; }
   }
 }
+
+
+/* ================= PLAYER DO TREINAMENTO =================
+   Monta a sequência: etapas de texto (cadastradas pelo RH ou importadas do
+   PowerPoint) + o vídeo do YouTube no início ou no fim. O texto de cada
+   etapa entra animado (título palavra por palavra, depois cada parágrafo e
+   item de lista). O progresso fica salvo neste aparelho; o treinamento só
+   pode ser concluído depois de chegar à última etapa. */
+var aula = null; // { t, passos, atual, maximo }
+
+function idYoutube(url){
+  var m = String(url || '').trim().match(/(?:youtube(?:-nocookie)?\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/|v\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+function videoDe(t){ return idYoutube(t.video_youtube) || idYoutube(t.link_conteudo); }
+function temAula(t){ return (Array.isArray(t.etapas) && t.etapas.length > 0) || !!videoDe(t); }
+
+function chaveProgresso(id){ return 'trilha_pa_prog_' + ((dadosTrilha && dadosTrilha.colaborador && dadosTrilha.colaborador.matricula) || '') + '_' + id; }
+function lerProgresso(id){ try{ return JSON.parse(localStorage.getItem(chaveProgresso(id)) || 'null') || { atual:0, maximo:0 }; }catch(e){ return { atual:0, maximo:0 }; } }
+function salvarProgresso(){ try{ localStorage.setItem(chaveProgresso(aula.t.id), JSON.stringify({ atual: aula.atual, maximo: aula.maximo })); }catch(e){} }
+
+function montarPassos(t){
+  var passos = (Array.isArray(t.etapas) ? t.etapas : []).map(function(e){ return { tipo:'texto', titulo: e.titulo, texto: e.texto }; });
+  var vid = videoDe(t);
+  if(vid){
+    var pv = { tipo:'video', titulo:'Assista ao vídeo', id: vid };
+    if(/final/i.test(t.video_posicao || '')) passos.push(pv); else passos.unshift(pv);
+  }
+  return passos;
+}
+
+function abrirAula(id){
+  var t = (dadosTrilha.treinamentos || []).find(function(x){ return x.id === id; });
+  if(!t) return;
+  var pr = lerProgresso(id);
+  var passos = montarPassos(t);
+  aula = { t: t, passos: passos, atual: Math.min(pr.atual || 0, passos.length - 1), maximo: Math.min(pr.maximo || 0, passos.length - 1) };
+  if(t.situacao === 'concluido') aula.maximo = passos.length - 1;
+  $('aula-nome').textContent = t.nome;
+  $('tela-aula').classList.remove('oculto');
+  document.body.style.overflow = 'hidden';
+  renderPasso();
+}
+
+function fecharAula(){
+  if(aula) salvarProgresso();
+  pararVideo();
+  $('tela-aula').classList.add('oculto');
+  document.body.style.overflow = '';
+  aula = null;
+  renderTrilha();
+}
+
+function pararVideo(){ var f = document.querySelector('#aula-palco iframe'); if(f) f.src = 'about:blank'; }
+
+function passoAula(d){
+  if(!aula) return;
+  if(aula.concluida || aula.salvando) return;
+  var ultimo = aula.atual === aula.passos.length - 1;
+  if(d > 0 && ultimo){ finalizarAula(); return; }
+  var novo = aula.atual + d;
+  if(novo < 0 || novo >= aula.passos.length) return;
+  pararVideo();
+  aula.atual = novo;
+  aula.maximo = Math.max(aula.maximo, novo);
+  salvarProgresso();
+  renderPasso();
+}
+
+/* Texto cadastrado -> blocos HTML animados.
+   Linha em branco separa parágrafos; "- ", "+ " ou "• " vira item de lista;
+   linha curta terminando em ":" vira subtítulo; "Rótulo: texto" fica com o
+   rótulo em negrito. */
+function formatarLinha(txt){
+  var m = txt.match(/^([^:]{2,48}):\s+(.+)$/);
+  return m ? '<strong>' + esc(m[1]) + ':</strong> ' + esc(m[2]) : esc(txt);
+}
+function blocosDoTexto(texto){
+  var blocos = [];
+  String(texto || '').split(/\n\s*\n/).forEach(function(par){
+    var lista = [];
+    var fecharLista = function(){ if(lista.length){ blocos.push({ lista: lista }); lista = []; } };
+    par.split('\n').forEach(function(l){
+      l = l.trim(); if(!l) return;
+      var item = l.match(/^[-+•]\s*(.+)$/);
+      var conteudo = item ? item[1] : l;
+      if(/:$/.test(conteudo) && conteudo.length <= 70){ fecharLista(); blocos.push({ h: conteudo }); return; }
+      if(item){ lista.push(conteudo); return; }
+      fecharLista(); blocos.push({ p: conteudo });
+    });
+    fecharLista();
+  });
+  return blocos;
+}
+
+function renderPasso(){
+  var passo = aula.passos[aula.atual], total = aula.passos.length, i = aula.atual;
+  $('aula-conta').textContent = (i + 1) + ' de ' + total;
+  $('aula-passos').innerHTML = aula.passos.map(function(_, k){
+    return '<i class="' + (k === i ? 'atual' : (k <= aula.maximo ? 'feito' : '')) + '"></i>';
+  }).join('');
+
+  var atraso = 0.15;
+  var titulo = '<h2 class="aula-titulo">' + String(passo.titulo || '').split(/\s+/).filter(Boolean).map(function(w){
+    var h = '<span class="pl" style="animation-delay:' + atraso.toFixed(2) + 's">' + esc(w) + '</span> ';
+    atraso += 0.07; return h;
+  }).join('') + '</h2>';
+  atraso += 0.2;
+  var passoAtr = function(){ var a = atraso; atraso = Math.min(atraso + 0.16, 3.2); return a.toFixed(2); };
+
+  var corpo = '';
+  if(passo.tipo === 'video'){
+    corpo = '<div class="aula-video rev" style="animation-delay:' + passoAtr() + 's">'
+      + '<iframe src="https://www.youtube-nocookie.com/embed/' + passo.id + '?rel=0&modestbranding=1&playsinline=1" title="' + esc(aula.t.nome) + '"'
+      + ' allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"'
+      + ' referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>';
+  } else {
+    corpo = blocosDoTexto(passo.texto).map(function(b){
+      if(b.h) return '<h3 class="rev" style="animation-delay:' + passoAtr() + 's">' + esc(b.h) + '</h3>';
+      if(b.p) return '<p class="rev" style="animation-delay:' + passoAtr() + 's">' + formatarLinha(b.p) + '</p>';
+      return '<ul>' + b.lista.map(function(li){ return '<li class="rev" style="animation-delay:' + passoAtr() + 's">' + formatarLinha(li) + '</li>'; }).join('') + '</ul>';
+    }).join('');
+  }
+  var palco = $('aula-palco');
+  palco.innerHTML = '<div class="aula-conteudo">'
+    + '<p class="aula-rotulo">' + (passo.tipo === 'video' ? 'Vídeo' : 'Etapa ' + (i + 1)) + '</p>' + titulo + corpo + '</div>';
+  palco.scrollTop = 0;
+
+  $('aula-voltar').disabled = i === 0;
+  var b = $('aula-avancar');
+  var ultimo = i === total - 1;
+  b.classList.toggle('fim', ultimo);
+  b.textContent = !ultimo ? 'Próximo'
+    : (aula.t.situacao !== 'concluido' && aula.t.conclusao_online ? 'Concluir treinamento' : 'Finalizar');
+  b.focus({ preventScroll: true });
+}
+
+async function finalizarAula(){
+  var t = aula.t;
+  var b = $('aula-avancar');
+  if(aula.salvando) return;
+  if(t.situacao !== 'concluido' && t.conclusao_online){
+    aula.salvando = true;
+    b.disabled = true; b.textContent = 'Salvando…';
+    try{
+      await rpc('trilha_concluir', { p_token: sessao.token, p_treinamento_id: t.id });
+      dadosTrilha = await rpc('trilha_meus_treinamentos', { p_token: sessao.token });
+    } catch(e){
+      alert(e.message); b.disabled = false; b.textContent = 'Concluir treinamento'; aula.salvando = false; return;
+    }
+    aula.concluida = true;
+    b.disabled = false;
+    pararVideo();
+    $('aula-passos').innerHTML = aula.passos.map(function(){ return '<i class="feito"></i>'; }).join('');
+    $('aula-palco').innerHTML = '<div class="aula-conteudo aula-fim"><div class="selo" aria-hidden="true">✓</div>'
+      + '<h2 class="aula-titulo" style="margin-bottom:10px;">Treinamento concluído</h2>'
+      + '<p class="rev" style="animation-delay:.5s;margin:0 auto;">"' + esc(t.nome) + '" já aparece como concluído na sua trilha.</p></div>';
+    $('aula-voltar').disabled = true;
+    b.classList.add('fim'); b.textContent = 'Voltar para a trilha';
+    b.onclick = function(){ b.onclick = function(){ passoAula(1); }; expandido = null; fecharAula(); };
+    return;
+  }
+  expandido = null;
+  fecharAula();
+}
+
+document.addEventListener('keydown', function(e){
+  if(!aula || $('tela-aula').classList.contains('oculto')) return;
+  if(e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
+  if(e.key === 'ArrowRight') passoAula(1);
+  else if(e.key === 'ArrowLeft') passoAula(-1);
+  else if(e.key === 'Escape') fecharAula();
+});
 
 /* ---------- Abertura ---------- */
 function abrirTelaInicial(){
