@@ -205,7 +205,7 @@
     <div id="msg-entrar"></div>
 
     <form id="form-entrar" onsubmit="entrar(event)">
-      <div class="campo"><label for="e-mat">Matrícula</label><input id="e-mat" inputmode="numeric" autocomplete="username" required></div>
+      <div class="campo"><label for="e-cpf">CPF</label><input id="e-cpf" inputmode="numeric" autocomplete="username" placeholder="000.000.000-00" maxlength="14" oninput="mascaraCpf(this)" required></div>
       <div class="campo"><label for="e-senha">Senha</label><input id="e-senha" type="password" autocomplete="current-password" required></div>
       <button class="btn btn-cheio" id="b-entrar" type="submit">Entrar</button>
       <p class="dica" style="margin:14px 0 0;">Esqueceu a senha? Peça ao RH para redefinir e faça o primeiro acesso de novo.</p>
@@ -213,8 +213,7 @@
 
     <form id="form-primeiro" class="oculto" onsubmit="primeiroAcesso(event)">
       <p class="dica" style="margin:0 0 14px;">Confirme seus dados do cadastro para criar sua senha.</p>
-      <div class="campo"><label for="p-mat">Matrícula</label><input id="p-mat" inputmode="numeric" autocomplete="username" required></div>
-      <div class="campo"><label for="p-cpf">CPF</label><input id="p-cpf" inputmode="numeric" placeholder="000.000.000-00" required></div>
+      <div class="campo"><label for="p-cpf">CPF</label><input id="p-cpf" inputmode="numeric" autocomplete="username" placeholder="000.000.000-00" maxlength="14" oninput="mascaraCpf(this)" required></div>
       <div class="campo"><label for="p-nasc">Data de nascimento</label><input id="p-nasc" type="date" required></div>
       <div class="campo"><label for="p-senha">Crie uma senha</label><input id="p-senha" type="password" autocomplete="new-password" minlength="6" required></div>
       <p class="dica">Pelo menos 6 caracteres.</p>
@@ -305,6 +304,13 @@ async function rpc(nome, params){
   return dados;
 }
 
+/* CPF: aceita com ou sem pontuação e formata enquanto digita */
+function mascaraCpf(el){
+  var d = el.value.replace(/\D/g, '').slice(0, 11);
+  el.value = d.replace(/^(\d{3})(\d)/, '$1.$2').replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3').replace(/\.(\d{3})(\d{1,2})$/, '.$1-$2');
+}
+function cpfValido(v){ return String(v || '').replace(/\D/g, '').length === 11; }
+
 function mostrar(tela){
   ['tela-entrar','tela-trilha','tela-carregando'].forEach(function(id){ $(id).classList.toggle('oculto', id !== tela); });
 }
@@ -325,7 +331,8 @@ async function entrar(ev){
   ev.preventDefault();
   var b = $('b-entrar'); b.disabled = true; b.textContent = 'Entrando…';
   try{
-    var r = await rpc('trilha_login', { p_matricula: $('e-mat').value.trim(), p_senha: $('e-senha').value });
+    if(!cpfValido($('e-cpf').value)){ msgEntrar('Digite o CPF completo, com 11 números.'); return; }
+    var r = await rpc('trilha_login', { p_cpf: $('e-cpf').value, p_senha: $('e-senha').value });
     guardarSessao(r);
     $('e-senha').value = '';
     await carregarTrilha();
@@ -335,12 +342,12 @@ async function entrar(ev){
 
 async function primeiroAcesso(ev){
   ev.preventDefault();
+  if(!cpfValido($('p-cpf').value)){ msgEntrar('Digite o CPF completo, com 11 números.'); return; }
   if($('p-senha').value !== $('p-senha2').value){ msgEntrar('As duas senhas não são iguais.'); return; }
   var b = $('b-primeiro'); b.disabled = true; b.textContent = 'Criando…';
   try{
     var r = await rpc('trilha_primeiro_acesso', {
-      p_matricula: $('p-mat').value.trim(), p_cpf: $('p-cpf').value,
-      p_nascimento: $('p-nasc').value || null, p_senha: $('p-senha').value
+      p_cpf: $('p-cpf').value, p_nascimento: $('p-nasc').value || null, p_senha: $('p-senha').value
     });
     guardarSessao(r);
     $('p-senha').value = ''; $('p-senha2').value = '';
@@ -684,8 +691,6 @@ function continuarIntro(){
 }
 
 (function iniciar(){
-  var m = new URLSearchParams(location.search).get('m');
-  if(m){ $('e-mat').value = m; $('p-mat').value = m; }
   sessao = lerSessao();
   iniciarIntro();
 })();
